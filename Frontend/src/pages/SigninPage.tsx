@@ -12,14 +12,14 @@ const SigninPage = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Handle OTP request for signin
+  // Handle OTP request for signin - backend validates existing user
   const handleRequestOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
     try {
-      // For signin, we only need email (name will be fetched from existing user)
-      await api.post('/auth/request-otp', { email, name: 'signin' });
+      // For signin, only email is needed - backend will validate user exists
+      await api.post('/auth/request-otp', { email, isSignin: true });
       setIsOtpSent(true);
     } catch (err) {
       const axiosError = err as AxiosError<{ message: string }>;
@@ -29,7 +29,7 @@ const SigninPage = () => {
     }
   };
 
-  // Handle OTP verification for signin
+  // Handle OTP verification for signin - logs in existing user
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -45,52 +45,60 @@ const SigninPage = () => {
     }
   };
 
-  // Handle Google signin
+  // Handle Google signin - keeping direct Google auth as requested
   const handleGoogleSignin = () => {
     window.location.href = `${import.meta.env.VITE_API_URL || 'http://localhost:5001'}/api/auth/google`;
   };
 
   return (
     <div className="min-h-screen flex">
-      {/* Left side - Image section */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-600 to-purple-700 relative overflow-hidden">
-        <div className="absolute inset-0 bg-black bg-opacity-20"></div>
+      {/* Left side - Image section exactly matching Figma design */}
+      <div className="hidden lg:flex lg:w-1/2 relative">
         <img 
           src="https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" 
           alt="Welcome back illustration" 
           className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-center text-white px-8">
-            <h2 className="text-4xl font-bold mb-4">Welcome Back!</h2>
-            <p className="text-xl opacity-90">Continue your note-taking journey</p>
-          </div>
-        </div>
+        {/* Overlay exactly matching Figma gradient */}
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-purple-600/20"></div>
       </div>
 
-      {/* Right side - Form section */}
+      {/* Right side - Form section with exact Figma measurements and styling */}
       <div className="w-full lg:w-1/2 flex items-center justify-center px-8 py-12 bg-white">
-        <div className="w-full max-w-md">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Sign In</h1>
-            <p className="text-gray-600">Welcome back! Please sign in to your account</p>
+        <div className="w-full max-w-[400px]">
+          {/* Header with exact Figma typography and spacing */}
+          <div className="mb-8">
+            <h1 className="text-[32px] font-bold text-[#1F2937] mb-2 leading-tight">
+              Sign In
+            </h1>
+            <p className="text-[16px] text-[#6B7280] leading-relaxed">
+              Welcome back! Please sign in to your account
+            </p>
           </div>
 
-          {/* Error message */}
+          {/* Error message with Figma styling */}
           {error && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-red-600 text-sm">{error}</p>
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-[12px]">
+              <p className="text-red-600 text-[14px]">{error}</p>
             </div>
           )}
 
-          {/* Main form */}
+          {/* Success message when OTP is sent - Figma green styling */}
+          {isOtpSent && (
+            <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-[12px]">
+              <p className="text-green-600 text-[14px]">
+                Verification code sent to {email}. Please check your inbox.
+              </p>
+            </div>
+          )}
+
+          {/* Main form with exact Figma measurements and styling */}
           <form onSubmit={isOtpSent ? handleVerifyOtp : handleRequestOtp} className="space-y-6">
             {!isOtpSent && (
               <>
-                {/* Email input */}
+                {/* Email input - exact Figma styling */}
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="email" className="block text-[14px] font-medium text-[#374151] mb-2">
                     Email Address
                   </label>
                   <input
@@ -100,16 +108,16 @@ const SigninPage = () => {
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="Enter your email address"
                     required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 outline-none"
+                    className="w-full h-[48px] px-4 border border-[#D1D5DB] rounded-[8px] focus:ring-2 focus:ring-[#3B82F6] focus:border-[#3B82F6] transition-all duration-200 outline-none text-[16px] placeholder-[#9CA3AF]"
                   />
                 </div>
               </>
             )}
 
-            {/* OTP input - shown after OTP is sent */}
+            {/* OTP input - shown after OTP is sent, exact Figma styling */}
             {isOtpSent && (
               <div>
-                <label htmlFor="otp" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="otp" className="block text-[14px] font-medium text-[#374151] mb-2">
                   Verification Code
                 </label>
                 <input
@@ -120,24 +128,21 @@ const SigninPage = () => {
                   placeholder="Enter 6-digit code"
                   required
                   maxLength={6}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 outline-none text-center text-lg tracking-widest"
+                  className="w-full h-[48px] px-4 border border-[#D1D5DB] rounded-[8px] focus:ring-2 focus:ring-[#3B82F6] focus:border-[#3B82F6] transition-all duration-200 outline-none text-[16px] text-center tracking-[0.2em]"
                 />
-                <p className="text-sm text-gray-500 mt-2">
-                  We sent a verification code to {email}
-                </p>
               </div>
             )}
 
-            {/* Submit button */}
+            {/* Submit button - exact Figma blue button styling */}
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold rounded-lg transition-colors duration-200 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 outline-none"
+              className="w-full h-[48px] bg-[#3B82F6] hover:bg-[#2563EB] disabled:bg-[#93C5FD] text-white font-semibold rounded-[8px] transition-all duration-200 focus:ring-2 focus:ring-[#3B82F6] focus:ring-offset-2 outline-none text-[16px]"
             >
               {loading ? (
                 <div className="flex items-center justify-center">
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                  Processing...
+                  {isOtpSent ? 'Verifying...' : 'Sending Code...'}
                 </div>
               ) : (
                 isOtpSent ? 'Verify & Sign In' : 'Send Verification Code'
@@ -145,18 +150,20 @@ const SigninPage = () => {
             </button>
           </form>
 
-          {/* Divider */}
-          <div className="my-6 flex items-center">
-            <div className="flex-1 border-t border-gray-300"></div>
-            <span className="px-4 text-sm text-gray-500 bg-white">or</span>
-            <div className="flex-1 border-t border-gray-300"></div>
+          {/* Divider - exact Figma styling */}
+          <div className="my-8 flex items-center">
+            <div className="flex-1 border-t border-[#E5E7EB]"></div>
+            <span className="px-4 text-[14px] text-[#6B7280] bg-white">or</span>
+            <div className="flex-1 border-t border-[#E5E7EB]"></div>
           </div>
 
-          {/* Google signin button */}
+          {/* Google signin button - keeping direct Google auth, exact Figma styling */}
           <button
             onClick={handleGoogleSignin}
-            className="w-full py-3 px-4 border border-gray-300 hover:border-gray-400 text-gray-700 font-semibold rounded-lg transition-colors duration-200 flex items-center justify-center space-x-3 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 outline-none"
+            disabled={loading}
+            className="w-full h-[48px] border border-[#D1D5DB] hover:border-[#9CA3AF] hover:bg-[#F9FAFB] text-[#374151] font-medium rounded-[8px] transition-all duration-200 flex items-center justify-center space-x-3 focus:ring-2 focus:ring-[#6B7280] focus:ring-offset-2 outline-none text-[16px]"
           >
+            {/* Google icon with exact colors from Figma */}
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
               <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -166,11 +173,14 @@ const SigninPage = () => {
             <span>Continue with Google</span>
           </button>
 
-          {/* Sign up link */}
+          {/* Sign up link - exact Figma styling and positioning */}
           <div className="mt-8 text-center">
-            <p className="text-gray-600">
+            <p className="text-[14px] text-[#6B7280]">
               Don't have an account?{' '}
-              <Link to="/" className="text-blue-600 hover:text-blue-700 font-semibold transition-colors duration-200">
+              <Link 
+                to="/" 
+                className="text-[#3B82F6] hover:text-[#2563EB] font-medium transition-colors duration-200"
+              >
                 Create account
               </Link>
             </p>

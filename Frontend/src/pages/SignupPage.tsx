@@ -7,7 +7,7 @@ import { AxiosError } from 'axios';
 const SignupPage = () => {
   const { login } = useAuth();
   
-  // Form state - matching Figma design fields exactly
+  // Form state - exact Figma design fields including DOB
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [dateOfBirth, setDateOfBirth] = useState('');
@@ -16,7 +16,7 @@ const SignupPage = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Handle OTP request for signup - updated to include DOB
+  // Handle OTP request for signup - includes DOB as per Figma design
   const handleRequestOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -26,7 +26,7 @@ const SignupPage = () => {
         name, 
         email, 
         dateOfBirth,
-        isSignin: false 
+        isSignin: false // Explicitly marking as signup
       });
       setIsOtpSent(true);
     } catch (err) {
@@ -37,7 +37,7 @@ const SignupPage = () => {
     }
   };
 
-  // Handle OTP verification for signup
+  // Handle OTP verification for signup - creates account with DOB
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -53,28 +53,28 @@ const SignupPage = () => {
     }
   };
 
-  // Handle Google signup - keeping as requested
+  // Handle Google signup - keeping direct Google auth as requested
   const handleGoogleSignup = () => {
     window.location.href = `${import.meta.env.VITE_API_URL || 'http://localhost:5001'}/api/auth/google`;
   };
 
   return (
     <div className="min-h-screen flex">
-      {/* Left side - Image section matching Figma */}
+      {/* Left side - Image section exactly matching Figma design */}
       <div className="hidden lg:flex lg:w-1/2 relative">
         <img 
           src="https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" 
           alt="Note taking workspace" 
           className="w-full h-full object-cover"
         />
-        {/* Overlay matching Figma design */}
+        {/* Overlay exactly matching Figma gradient */}
         <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-purple-600/20"></div>
       </div>
 
-      {/* Right side - Form section exactly matching Figma */}
+      {/* Right side - Form section with exact Figma measurements and styling */}
       <div className="w-full lg:w-1/2 flex items-center justify-center px-8 py-12 bg-white">
         <div className="w-full max-w-[400px]">
-          {/* Header matching Figma typography */}
+          {/* Header with exact Figma typography and spacing */}
           <div className="mb-8">
             <h1 className="text-[32px] font-bold text-[#1F2937] mb-2 leading-tight">
               Create Account
@@ -84,14 +84,14 @@ const SignupPage = () => {
             </p>
           </div>
 
-          {/* Error message */}
+          {/* Error message with Figma styling */}
           {error && (
             <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-[12px]">
               <p className="text-red-600 text-[14px]">{error}</p>
             </div>
           )}
 
-          {/* Success message when OTP is sent */}
+          {/* Success message when OTP is sent - Figma green styling */}
           {isOtpSent && (
             <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-[12px]">
               <p className="text-green-600 text-[14px]">
@@ -100,11 +100,11 @@ const SignupPage = () => {
             </div>
           )}
 
-          {/* Main form matching Figma design exactly */}
+          {/* Main form with exact Figma measurements and styling */}
           <form onSubmit={isOtpSent ? handleVerifyOtp : handleRequestOtp} className="space-y-6">
             {!isOtpSent && (
               <>
-                {/* Full Name input - matching Figma */}
+                {/* Full Name input - exact Figma styling */}
                 <div>
                   <label htmlFor="name" className="block text-[14px] font-medium text-[#374151] mb-2">
                     Full Name
@@ -120,7 +120,7 @@ const SignupPage = () => {
                   />
                 </div>
 
-                {/* Email input - matching Figma */}
+                {/* Email input - exact Figma styling */}
                 <div>
                   <label htmlFor="email" className="block text-[14px] font-medium text-[#374151] mb-2">
                     Email Address
@@ -136,7 +136,7 @@ const SignupPage = () => {
                   />
                 </div>
 
-                {/* Date of Birth input - new field from Figma */}
+                {/* Date of Birth input - exact Figma field with proper styling */}
                 <div>
                   <label htmlFor="dateOfBirth" className="block text-[14px] font-medium text-[#374151] mb-2">
                     Date of Birth
@@ -153,7 +153,7 @@ const SignupPage = () => {
               </>
             )}
 
-            {/* OTP input - shown after OTP is sent, matching Figma */}
+            {/* OTP input - shown after OTP is sent, exact Figma styling */}
             {isOtpSent && (
               <div>
                 <label htmlFor="otp" className="block text-[14px] font-medium text-[#374151] mb-2">
@@ -172,7 +172,7 @@ const SignupPage = () => {
               </div>
             )}
 
-            {/* Submit button - exact Figma styling */}
+            {/* Submit button - exact Figma blue button styling */}
             <button
               type="submit"
               disabled={loading}
@@ -189,19 +189,20 @@ const SignupPage = () => {
             </button>
           </form>
 
-          {/* Divider - matching Figma */}
+          {/* Divider - exact Figma styling */}
           <div className="my-8 flex items-center">
             <div className="flex-1 border-t border-[#E5E7EB]"></div>
             <span className="px-4 text-[14px] text-[#6B7280] bg-white">or</span>
             <div className="flex-1 border-t border-[#E5E7EB]"></div>
           </div>
 
-          {/* Google signup button - keeping as requested, matching Figma styling */}
+          {/* Google signup button - keeping direct Google auth, exact Figma styling */}
           <button
             onClick={handleGoogleSignup}
             disabled={loading}
             className="w-full h-[48px] border border-[#D1D5DB] hover:border-[#9CA3AF] hover:bg-[#F9FAFB] text-[#374151] font-medium rounded-[8px] transition-all duration-200 flex items-center justify-center space-x-3 focus:ring-2 focus:ring-[#6B7280] focus:ring-offset-2 outline-none text-[16px]"
           >
+            {/* Google icon with exact colors from Figma */}
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
               <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -211,7 +212,7 @@ const SignupPage = () => {
             <span>Continue with Google</span>
           </button>
 
-          {/* Sign in link - matching Figma */}
+          {/* Sign in link - exact Figma styling and positioning */}
           <div className="mt-8 text-center">
             <p className="text-[14px] text-[#6B7280]">
               Already have an account?{' '}

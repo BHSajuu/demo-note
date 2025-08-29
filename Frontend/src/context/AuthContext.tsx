@@ -4,10 +4,12 @@ import type {ReactNode} from "react"
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 
+// User interface matching backend user model
 interface User {
   _id: string; 
   name: string;
   email: string;
+  dateOfBirth?: string; // Optional since Google auth users may not have DOB
 }
 
 interface AuthContextType {
@@ -27,20 +29,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
+  // Logout function - clears auth state and redirects to signin
   const logout = useCallback(() => {
     setUser(null);
     setToken(null);
     localStorage.removeItem('authToken');
-    navigate('/signin'); // Updated to navigate to signin page instead of signup
+    navigate('/signin'); // Navigate to signin page after logout
   }, [navigate]);
 
+  // Load user data from stored token on app initialization
   useEffect(() => {
     const loadUserFromToken = async () => {
       if (token) {
         try {
+          // Fetch user data using stored token
           const { data } = await api.get('/auth/me');
           setUser(data);
         } catch (error) {
+          // Clear invalid token
           console.error("Invalid token, logging out.");
           localStorage.removeItem('authToken');
           setToken(null);
@@ -54,10 +60,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     loadUserFromToken();
   }, [token]); 
 
+  // Login function - stores token and navigates to dashboard
   const login = (newToken: string) => {
     setToken(newToken);
     localStorage.setItem('authToken', newToken); 
-    // Navigate to dashboard after successful login
     navigate('/dashboard');
   };
 
