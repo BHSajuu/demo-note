@@ -12,6 +12,9 @@ const userSchema = new mongoose.Schema<IUser>(
       required: true,
       unique: true,
     },
+    dateOfBirth: {
+      type: Date,
+    },
     googleId: { 
       type: String,
     },

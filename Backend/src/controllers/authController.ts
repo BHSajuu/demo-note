@@ -28,14 +28,27 @@ const sendEmail = async (email: string, subject: string, text: string) => {
 };
 
 export const requestOtp = async (req: Request, res: Response) => {
-  const { email, name } = req.body;
+  const { email, name, dateOfBirth, isSignin } = req.body;
 
-  if (!email || !name) {
-    return res.status(400).json({ message: 'Name and email are required' });
+  if (!email) {
+    return res.status(400).json({ message: 'Email is required' });
+  }
+
+  // For signin, check if user exists
+  if (isSignin) {
+    const existingUser = await User.findOne({ email });
+    if (!existingUser) {
+      return res.status(400).json({ message: 'No account found with this email. Please sign up first.' });
+    }
+  } else {
+    // For signup, validate required fields
+    if (!name || !dateOfBirth) {
+      return res.status(400).json({ message: 'Name, email, and date of birth are required' });
+    }
   }
 
   const existingUser = await User.findOne({ email });
-  if (existingUser && !existingUser.otp) { 
+  if (existingUser && !existingUser.otp && !isSignin) { 
       return res.status(400).json({ message: 'User already exists. Please log in.' });
   }
 
@@ -45,15 +58,32 @@ export const requestOtp = async (req: Request, res: Response) => {
   const hashedOtp = await bcrypt.hash(otp, 10);
 
   try {
-    await User.findOneAndUpdate(
+    if (isSignin) {
+      // For signin, only update OTP fields
+      await User.findOneAndUpdate(
         { email },
-        { name, email, otp: hashedOtp, otpExpiry },
+        { otp: hashedOtp, otpExpiry },
+        { new: true }
+      );
+    } else {
+      // For signup, create or update with all fields
+      await User.findOneAndUpdate(
+        { email },
+        { name, email, dateOfBirth: new Date(dateOfBirth), otp: hashedOtp, otpExpiry },
         { upsert: true, new: true, setDefaultsOnInsert: true }
-    );
+      );
+    }
     
-    await sendEmail(email, 'Your OTP for Note Taking App', `Your verification code is: ${otp}`);
+    const emailSubject = isSignin ? 'Sign In Verification Code' : 'Welcome to NoteTaker - Verification Code';
+    const emailText = isSignin 
+      ? `Your sign in verification code is: ${otp}. This code will expire in 10 minutes.`
+      : `Welcome to NoteTaker! Your verification code is: ${otp}. This code will expire in 10 minutes.`;
     
-    return res.status(200).json({ message: 'OTP sent to your email.' });
+    await sendEmail(email, emailSubject, emailText);
+    
+    return res.status(200).json({ 
+      message: isSignin ? 'Verification code sent to your email.' : 'Account created! Verification code sent to your email.' 
+    });
   } catch (error) {
     return res.status(500).json({ message: 'Error processing request', error });
   }
