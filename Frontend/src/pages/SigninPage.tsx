@@ -4,22 +4,22 @@ import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import { AxiosError } from 'axios';
 
-const SignupPage = () => {
+const SigninPage = () => {
   const { login } = useAuth();
-  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
   const [isOtpSent, setIsOtpSent] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Handle OTP request for signup
+  // Handle OTP request for signin
   const handleRequestOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
     try {
-      await api.post('/auth/request-otp', { name, email });
+      // For signin, we only need email (name will be fetched from existing user)
+      await api.post('/auth/request-otp', { email, name: 'signin' });
       setIsOtpSent(true);
     } catch (err) {
       const axiosError = err as AxiosError<{ message: string }>;
@@ -29,7 +29,7 @@ const SignupPage = () => {
     }
   };
 
-  // Handle OTP verification for signup
+  // Handle OTP verification for signin
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -45,8 +45,8 @@ const SignupPage = () => {
     }
   };
 
-  // Handle Google signup
-  const handleGoogleSignup = () => {
+  // Handle Google signin
+  const handleGoogleSignin = () => {
     window.location.href = `${import.meta.env.VITE_API_URL || 'http://localhost:5001'}/api/auth/google`;
   };
 
@@ -56,14 +56,14 @@ const SignupPage = () => {
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-600 to-purple-700 relative overflow-hidden">
         <div className="absolute inset-0 bg-black bg-opacity-20"></div>
         <img 
-          src="https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" 
-          alt="Note taking illustration" 
+          src="https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" 
+          alt="Welcome back illustration" 
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center text-white px-8">
-            <h2 className="text-4xl font-bold mb-4">Welcome to NoteTaker</h2>
-            <p className="text-xl opacity-90">Organize your thoughts, boost your productivity</p>
+            <h2 className="text-4xl font-bold mb-4">Welcome Back!</h2>
+            <p className="text-xl opacity-90">Continue your note-taking journey</p>
           </div>
         </div>
       </div>
@@ -73,8 +73,8 @@ const SignupPage = () => {
         <div className="w-full max-w-md">
           {/* Header */}
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Create Account</h1>
-            <p className="text-gray-600">Join us and start organizing your notes</p>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Sign In</h1>
+            <p className="text-gray-600">Welcome back! Please sign in to your account</p>
           </div>
 
           {/* Error message */}
@@ -88,22 +88,6 @@ const SignupPage = () => {
           <form onSubmit={isOtpSent ? handleVerifyOtp : handleRequestOtp} className="space-y-6">
             {!isOtpSent && (
               <>
-                {/* Name input */}
-                <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-                    Full Name
-                  </label>
-                  <input
-                    id="name"
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="Enter your full name"
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 outline-none"
-                  />
-                </div>
-
                 {/* Email input */}
                 <div>
                   <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
@@ -156,7 +140,7 @@ const SignupPage = () => {
                   Processing...
                 </div>
               ) : (
-                isOtpSent ? 'Verify & Create Account' : 'Send Verification Code'
+                isOtpSent ? 'Verify & Sign In' : 'Send Verification Code'
               )}
             </button>
           </form>
@@ -168,9 +152,9 @@ const SignupPage = () => {
             <div className="flex-1 border-t border-gray-300"></div>
           </div>
 
-          {/* Google signup button */}
+          {/* Google signin button */}
           <button
-            onClick={handleGoogleSignup}
+            onClick={handleGoogleSignin}
             className="w-full py-3 px-4 border border-gray-300 hover:border-gray-400 text-gray-700 font-semibold rounded-lg transition-colors duration-200 flex items-center justify-center space-x-3 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 outline-none"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -182,12 +166,12 @@ const SignupPage = () => {
             <span>Continue with Google</span>
           </button>
 
-          {/* Sign in link */}
+          {/* Sign up link */}
           <div className="mt-8 text-center">
             <p className="text-gray-600">
-              Already have an account?{' '}
-              <Link to="/signin" className="text-blue-600 hover:text-blue-700 font-semibold transition-colors duration-200">
-                Sign in
+              Don't have an account?{' '}
+              <Link to="/" className="text-blue-600 hover:text-blue-700 font-semibold transition-colors duration-200">
+                Create account
               </Link>
             </p>
           </div>
@@ -197,4 +181,4 @@ const SignupPage = () => {
   );
 };
 
-export default SignupPage;
+export default SigninPage;

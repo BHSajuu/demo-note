@@ -31,7 +31,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(null);
     setToken(null);
     localStorage.removeItem('authToken');
-    navigate('/');
+    navigate('/signin'); // Updated to navigate to signin page instead of signup
   }, [navigate]);
 
   useEffect(() => {
@@ -57,6 +57,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const login = (newToken: string) => {
     setToken(newToken);
     localStorage.setItem('authToken', newToken); 
+    // Navigate to dashboard after successful login
     navigate('/dashboard');
   };
 
