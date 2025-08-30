@@ -32,6 +32,9 @@ const sendEmail = async (email: string, subject: string, text: string) => {
 export const requestOtp = async (req: Request, res: Response) => {
   const { email, name, dateOfBirth, isSignin } = req.body;
 
+  // Log the incoming request for debugging DOB storage
+  console.log('Request OTP - Received data:', { email, name, dateOfBirth, isSignin });
+
   if (!email) {
     return res.status(400).json({ message: 'Email is required' });
   }
@@ -46,6 +49,12 @@ export const requestOtp = async (req: Request, res: Response) => {
     // For signup, validate all required fields including DOB from Figma design
     if (!name || !dateOfBirth) {
       return res.status(400).json({ message: 'Name, email, and date of birth are required' });
+    }
+    
+    // Validate date format and ensure it's a valid date
+    const dobDate = new Date(dateOfBirth);
+    if (isNaN(dobDate.getTime())) {
+      return res.status(400).json({ message: 'Invalid date of birth format' });
     }
     
     // Check if user already exists for signup (excluding users with pending OTP)
@@ -72,7 +81,7 @@ export const requestOtp = async (req: Request, res: Response) => {
       );
     } else {
       // For signup, create or update with all fields including DOB
-      await User.findOneAndUpdate(
+      const updatedUser = await User.findOneAndUpdate(
         { email },
         { 
           name, 
@@ -83,6 +92,14 @@ export const requestOtp = async (req: Request, res: Response) => {
         },
         { upsert: true, new: true, setDefaultsOnInsert: true }
       );
+      
+      // Log the stored user data to verify DOB is saved correctly
+      console.log('User created/updated with DOB:', {
+        email: updatedUser.email,
+        name: updatedUser.name,
+        dateOfBirth: updatedUser.dateOfBirth,
+        dobType: typeof updatedUser.dateOfBirth
+      });
     }
     
     // Send appropriate email based on signup vs signin
@@ -180,12 +197,20 @@ export const googleAuthCallback = (req: Request, res: Response) => {
 // Get current user endpoint - returns authenticated user data
 
 export const getMe = async (req: Request, res: Response) => {
+  // Log user data retrieval for debugging
+  console.log('Getting user data:', {
+    userId: req.user?._id,
+    email: req.user?.email,
+    dateOfBirth: req.user?.dateOfBirth,
+    dobType: typeof req.user?.dateOfBirth
+  });
+  
   // Return user data including DOB for frontend display
   const userData = {
     _id: req.user?._id,
     name: req.user?.name,
     email: req.user?.email,
-    dateOfBirth: req.user?.dateOfBirth,
+    dateOfBirth: req.user?.dateOfBirth, // This will be a Date object from MongoDB
     createdAt: req.user?.createdAt,
     updatedAt: req.user?.updatedAt
   };

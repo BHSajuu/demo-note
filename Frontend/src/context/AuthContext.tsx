@@ -9,7 +9,7 @@ interface User {
   _id: string; 
   name: string;
   email: string;
-  dateOfBirth?: string; // Optional since Google auth users may not have DOB - stored as ISO string from backend
+  dateOfBirth?: string | Date; // Optional since Google auth users may not have DOB - can be Date object or ISO string from backend
 }
 
 interface AuthContextType {
@@ -44,6 +44,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         try {
           // Fetch user data using stored token
           const { data } = await api.get('/auth/me');
+          // Log received user data to verify DOB is properly retrieved
+          console.log('User data loaded from token:', {
+            name: data.name,
+            email: data.email,
+            dateOfBirth: data.dateOfBirth,
+            dobType: typeof data.dateOfBirth
+          });
           setUser(data);
         } catch (error) {
           // Clear invalid token
