@@ -17,6 +17,7 @@ const Dashboard = () => {
   const [content, setContent] = useState('');
   const [isCreating, setIsCreating] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [showCreateForm, setShowCreateForm] = useState(false);
 
   // Fetch notes on component mount
   useEffect(() => {
@@ -44,6 +45,7 @@ const Dashboard = () => {
       setNotes([newNote, ...notes]); // Add new note to the beginning
       setTitle('');
       setContent('');
+      setShowCreateForm(false); // Hide form after creation
     } catch (error) {
       console.error('Failed to create note', error);
     } finally {
@@ -63,117 +65,134 @@ const Dashboard = () => {
     }
   };
 
-  // Format date for display
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-gray-900">NoteTaker</h1>
+    <div className="min-h-screen bg-white">
+      {/* Mobile-style header matching Figma design */}
+      <div className="max-w-sm mx-auto bg-white">
+        {/* Status bar simulation */}
+        <div className="flex justify-between items-center px-6 py-2 text-sm font-medium">
+          <span>9:41</span>
+          <div className="flex items-center space-x-1">
+            <div className="flex space-x-1">
+              <div className="w-1 h-3 bg-black rounded-full"></div>
+              <div className="w-1 h-3 bg-black rounded-full"></div>
+              <div className="w-1 h-3 bg-black rounded-full"></div>
+              <div className="w-1 h-3 bg-gray-300 rounded-full"></div>
             </div>
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-                  <span className="text-white font-semibold text-sm">
-                    {user?.name?.charAt(0).toUpperCase()}
-                  </span>
+            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M2 17h20v2H2zm1.15-4.05L4 11.47l.85 1.48L5.5 12l-.65-.95zM6.5 12l1.15 1.95L8.5 12l-.85-1.48L6.5 12zm3 0l1.15 1.95L11.5 12l-.85-1.48L9.5 12zm3 0l1.15 1.95L14.5 12l-.85-1.48L12.5 12zm3 0l1.15 1.95L17.5 12l-.85-1.48L15.5 12zm3 0l1.15 1.95L20.5 12l-.85-1.48L18.5 12z"/>
+            </svg>
+            <div className="w-6 h-3 border border-black rounded-sm">
+              <div className="w-4 h-1 bg-black rounded-sm mt-0.5 ml-0.5"></div>
+            </div>
+          </div>
+        </div>
+
+        {/* Header with HD logo and Dashboard title - exact Figma layout */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+          <div className="flex items-center">
+            <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center mr-3">
+              <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+              </svg>
+            </div>
+            <span className="text-lg font-semibold text-gray-900">Dashboard</span>
+          </div>
+          <button
+            onClick={logout}
+            className="text-blue-500 hover:text-blue-600 font-medium text-sm transition-colors duration-200"
+          >
+            Sign Out
+          </button>
+        </div>
+
+        {/* Welcome section - exact Figma styling */}
+        <div className="px-6 py-6">
+          <h1 className="text-xl font-bold text-gray-900 mb-1">
+            Welcome, {user?.name} !
+          </h1>
+          <p className="text-gray-500 text-sm mb-6">
+            Email: {user?.email?.replace(/(.{6}).*(@.*)/, '$1****$2')}
+          </p>
+
+          {/* Create Note button - exact Figma blue button styling */}
+          <button
+            onClick={() => setShowCreateForm(!showCreateForm)}
+            className="w-full py-3 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 mb-6"
+          >
+            Create Note
+          </button>
+
+          {/* Create note form - shown when Create Note is clicked */}
+          {showCreateForm && (
+            <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+              <form onSubmit={handleCreateNote} className="space-y-4">
+                <input
+                  type="text"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="Note title..."
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                />
+                <textarea
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  placeholder="Write your note content here..."
+                  required
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm resize-none"
+                />
+                <div className="flex space-x-2">
+                  <button
+                    type="submit"
+                    disabled={isCreating || !title.trim() || !content.trim()}
+                    className="flex-1 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white font-medium rounded-lg transition-colors duration-200 text-sm"
+                  >
+                    {isCreating ? 'Creating...' : 'Save Note'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowCreateForm(false);
+                      setTitle('');
+                      setContent('');
+                    }}
+                    className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium rounded-lg transition-colors duration-200 text-sm"
+                  >
+                    Cancel
+                  </button>
                 </div>
-                <span className="text-gray-700 font-medium">{user?.name}</span>
+              </form>
+            </div>
+          )}
+
+          {/* Notes section - exact Figma styling */}
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Notes</h2>
+
+            {loading ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
               </div>
-              <button
-                onClick={logout}
-                className="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium transition-colors duration-200"
-              >
-                Sign Out
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Create note section */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Create New Note</h2>
-          <form onSubmit={handleCreateNote} className="space-y-4">
-            <div>
-              <input
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Note title..."
-                required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 outline-none text-lg font-medium"
-              />
-            </div>
-            <div>
-              <textarea
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                placeholder="Write your note content here..."
-                required
-                rows={4}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 outline-none resize-none"
-              />
-            </div>
-            <div className="flex justify-end">
-              <button
-                type="submit"
-                disabled={isCreating || !title.trim() || !content.trim()}
-                className="px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold rounded-lg transition-colors duration-200 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 outline-none"
-              >
-                {isCreating ? (
-                  <div className="flex items-center">
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                    Creating...
-                  </div>
-                ) : (
-                  'Create Note'
-                )}
-              </button>
-            </div>
-          </form>
-        </div>
-
-        {/* Notes section */}
-        <div>
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-900">Your Notes</h2>
-            <span className="text-gray-500 text-sm">
-              {notes.length} {notes.length === 1 ? 'note' : 'notes'}
-            </span>
-          </div>
-
-          {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-            </div>
-          ) : notes.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {notes.map((note) => (
-                <div
-                  key={note._id}
-                  className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200"
-                >
-                  <div className="flex justify-between items-start mb-3">
-                    <h3 className="text-lg font-semibold text-gray-900 line-clamp-2">
-                      {note.title}
-                    </h3>
+            ) : notes.length > 0 ? (
+              <div className="space-y-3">
+                {notes.map((note, index) => (
+                  <div
+                    key={note._id}
+                    className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+                  >
+                    <div className="flex-1">
+                      <h3 className="font-medium text-gray-900 mb-1">
+                        {note.title}
+                      </h3>
+                      <p className="text-gray-500 text-sm line-clamp-2">
+                        {note.content}
+                      </p>
+                    </div>
                     <button
                       onClick={() => handleDeleteNote(note._id)}
-                      className="text-gray-400 hover:text-red-500 transition-colors duration-200 p-1"
+                      className="ml-4 text-gray-400 hover:text-red-500 transition-colors duration-200 p-1"
                       title="Delete note"
                     >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -181,26 +200,27 @@ const Dashboard = () => {
                       </svg>
                     </button>
                   </div>
-                  <p className="text-gray-600 mb-4 line-clamp-3">{note.content}</p>
-                  <div className="text-xs text-gray-400">
-                    Created {formatDate(note.createdAt)}
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-12">
-              <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-                <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
+                ))}
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No notes yet</h3>
-              <p className="text-gray-500 mb-6">Create your first note to get started!</p>
-            </div>
-          )}
+            ) : (
+              <div className="text-center py-8">
+                <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                  <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                <h3 className="text-base font-medium text-gray-900 mb-2">No notes yet</h3>
+                <p className="text-gray-500 text-sm">Create your first note to get started!</p>
+              </div>
+            )}
+          </div>
         </div>
-      </main>
+
+        {/* Bottom indicator - mobile-style home indicator */}
+        <div className="flex justify-center py-4">
+          <div className="w-32 h-1 bg-black rounded-full"></div>
+        </div>
+      </div>
     </div>
   );
 };

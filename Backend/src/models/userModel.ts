@@ -16,7 +16,7 @@ const userSchema = new mongoose.Schema<IUser>(
     // Date of Birth field - required for email signup as per Figma design
     dateOfBirth: {
       type: Date,
-      // Not required for Google auth users, only for email signup
+      // Required for email signup (Figma design), optional for Google auth users
     },
     // Google ID for Google OAuth users
     googleId: { 

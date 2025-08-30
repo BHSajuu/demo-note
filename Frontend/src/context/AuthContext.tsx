@@ -9,7 +9,7 @@ interface User {
   _id: string; 
   name: string;
   email: string;
-  dateOfBirth?: string; // Optional since Google auth users may not have DOB
+  dateOfBirth?: string; // Optional since Google auth users may not have DOB - stored as ISO string from backend
 }
 
 interface AuthContextType {

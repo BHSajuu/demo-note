@@ -47,12 +47,12 @@ export const requestOtp = async (req: Request, res: Response) => {
     if (!name || !dateOfBirth) {
       return res.status(400).json({ message: 'Name, email, and date of birth are required' });
     }
-  }
-
-  // Check if user already exists for signup flow
-  const existingUser = await User.findOne({ email });
-  if (existingUser && !existingUser.otp && !isSignin) { 
-      return res.status(400).json({ message: 'User already exists. Please log in.' });
+    
+    // Check if user already exists for signup (excluding users with pending OTP)
+    const existingUser = await User.findOne({ email });
+    if (existingUser && !existingUser.otp) {
+      return res.status(400).json({ message: 'User already exists. Please sign in instead.' });
+    }
   }
 
   // Generate 6-digit OTP and set 10-minute expiry
@@ -74,7 +74,13 @@ export const requestOtp = async (req: Request, res: Response) => {
       // For signup, create or update with all fields including DOB
       await User.findOneAndUpdate(
         { email },
-        { name, email, dateOfBirth: new Date(dateOfBirth), otp: hashedOtp, otpExpiry },
+        { 
+          name, 
+          email, 
+          dateOfBirth: new Date(dateOfBirth), // Properly store DOB as Date object
+          otp: hashedOtp, 
+          otpExpiry 
+        },
         { upsert: true, new: true, setDefaultsOnInsert: true }
       );
     }
@@ -98,7 +104,7 @@ export const requestOtp = async (req: Request, res: Response) => {
 // Verify OTP endpoint - handles both signup and signin verification
 
 export const verifyOtp = async (req: Request, res: Response) => {
-  const { email, otp } = req.body;
+  const { email, otp, keepLoggedIn } = req.body;
 
   if (!email || !otp) {
     return res.status(400).json({ message: 'Email and OTP are required' });
@@ -129,9 +135,10 @@ export const verifyOtp = async (req: Request, res: Response) => {
     user.otpExpiry = null;
     await user.save();
 
-    // Generate JWT token for authentication
+    // Generate JWT token with appropriate expiry based on keepLoggedIn option
+    const tokenExpiry = keepLoggedIn ? '30d' : '7d'; // Extended expiry if user wants to stay logged in
     const token = jwt.sign({ id: user._id }, process.env['JWT_SECRET'] as string, {
-      expiresIn: '7d',
+      expiresIn: tokenExpiry,
     });
 
     return res.status(201).json({
@@ -141,6 +148,7 @@ export const verifyOtp = async (req: Request, res: Response) => {
         id: user._id,
         name: user.name,
         email: user.email,
+        dateOfBirth: user.dateOfBirth, // Include DOB in response for frontend
       },
     });
   } catch (error) {
@@ -172,5 +180,15 @@ export const googleAuthCallback = (req: Request, res: Response) => {
 // Get current user endpoint - returns authenticated user data
 
 export const getMe = async (req: Request, res: Response) => {
-  res.status(200).json(req.user);
+  // Return user data including DOB for frontend display
+  const userData = {
+    _id: req.user?._id,
+    name: req.user?.name,
+    email: req.user?.email,
+    dateOfBirth: req.user?.dateOfBirth,
+    createdAt: req.user?.createdAt,
+    updatedAt: req.user?.updatedAt
+  };
+  
+  res.status(200).json(userData);
 };
